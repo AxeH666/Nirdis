@@ -1,0 +1,112 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Enums
+enum AuthProvider {
+  GOOGLE
+  EMAIL
+}
+
+enum Plan {
+  FREE
+  PRO
+  PREMIUM
+}
+
+enum ActionType {
+  ASTROLOGY
+  PALM
+  CHAT
+}
+
+// Models
+model Guest {
+  id                  String      @id @default(uuid())
+  astrology_reads_used Int        @default(0)
+  palm_reads_used     Int         @default(0)
+  created_at          DateTime    @default(now())
+  last_seen           DateTime?
+  usage_logs          UsageLog[]
+
+  @@index([created_at])
+}
+
+model User {
+  id           String      @id @default(uuid())
+  email        String      @unique
+  name         String?
+  auth_provider AuthProvider
+  plan         Plan        @default(FREE)
+  created_at   DateTime    @default(now())
+  usage_logs   UsageLog[]
+  accounts     Account[]
+  sessions     Session[]
+
+  @@index([created_at])
+  @@index([email])
+}
+
+model UsageLog {
+  id          String      @id @default(uuid())
+  user_id     String?
+  guest_id    String?
+  action_type ActionType
+  created_at  DateTime    @default(now())
+  user        User?       @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  guest       Guest?      @relation(fields: [guest_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([guest_id])
+  @@index([created_at])
+  @@index([action_type])
+}
+
+// Auth.js models
+model Account {
+  id                String  @id @default(uuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
