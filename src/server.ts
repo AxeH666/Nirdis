@@ -5,6 +5,8 @@ import cookie from '@fastify/cookie';
 import { handleAuthRequest } from './modules/auth/auth.handler';
 import { disconnectPrisma } from './config/prisma';
 import { birthProfileRoutes } from './modules/birth-profile/birth-profile.routes';
+import { astroRoutes } from './modules/astro/astro.routes';
+import { astrologyRoutes } from './modules/astrology/astrology.routes';
 
 const start = async () => {
   const fastify = Fastify({
@@ -46,6 +48,8 @@ const start = async () => {
 
   // API routes (authenticated)
   await fastify.register(birthProfileRoutes);
+  await fastify.register(astroRoutes);
+  await fastify.register(astrologyRoutes);
 
   // Graceful startup with port conflict handling
   const port = Number(process.env.PORT) || 3000;
