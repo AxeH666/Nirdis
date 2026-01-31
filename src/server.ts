@@ -3,6 +3,8 @@ import Fastify from 'fastify';
 import { handleAuthRequest } from './modules/auth/auth.handler';
 import { getChart } from './modules/astrology/chart.service';
 import { buildLifeDomains } from './modules/astrology/lifeDomains';
+import { generateInterpretation } from './modules/interpretation';
+import { mapChartToInsights } from './modules/psychology';
 
 const fastify = Fastify({
   logger: true,
@@ -31,6 +33,15 @@ fastify.get('/api/astrology/chart', async (request, reply) => {
     summary,
     life_domains,
   };
+});
+
+// Interpretation endpoint (uses chart data, does not recompute astrology)
+fastify.get('/api/interpretation', async (request, reply) => {
+  const chart = await getChart();
+  const summary = `${chart.system} natal chart with ${chart.ascendant} rising.`;
+  const traits = mapChartToInsights(chart);
+  const interpretation = await generateInterpretation({ summary, traits });
+  return interpretation;
 });
 
 const start = async () => {
