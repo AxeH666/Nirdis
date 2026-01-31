@@ -6,7 +6,11 @@ import { birthDatetimeUtc } from "./birth-datetime";
 import { resolveLocation } from "../location-resolver/location-resolver";
 import { TimeConfidence } from "@prisma/client";
 
-const LOCKED_MESSAGE = "Birth profile is locked and cannot be modified";
+// Human-friendly, trust-oriented error messages
+const ALREADY_EXISTS_ERROR = "Birth profile already exists";
+const ALREADY_EXISTS_MESSAGE = "Birth details can only be submitted once";
+const LOCKED_ERROR = "Birth profile is locked";
+const LOCKED_MESSAGE = "Your birth details are securely stored and cannot be changed";
 
 /**
  * Map API time_confidence string to Prisma enum
@@ -62,8 +66,8 @@ export async function birthProfileRoutes(fastify: FastifyInstance): Promise<void
     const existing = await prisma.birthProfile.findUnique({ where: { userId } });
     if (existing) {
       return reply.status(409).send({
-        error: "Conflict",
-        message: "A birth profile already exists for this user",
+        error: ALREADY_EXISTS_ERROR,
+        message: ALREADY_EXISTS_MESSAGE,
       });
     }
 
@@ -109,23 +113,97 @@ export async function birthProfileRoutes(fastify: FastifyInstance): Promise<void
   });
 
   /**
-   * PUT /api/birth-profile
-   * Updates are not allowed; birth profiles are immutable.
+   * GET /api/birth-profile
+   * Returns the authenticated user's birth profile in a safe, frontend-ready format.
+   * Does NOT expose internal fields (latitude, longitude, timezone, birthUtc).
    */
-  fastify.put("/api/birth-profile", async (_request, reply) => {
+  fastify.get("/api/birth-profile", async (request, reply) => {
+    const session = await requireAuth(request, reply);
+    if (!session) return;
+
+    const profile = await prisma.birthProfile.findUnique({
+      where: { userId: session.user.id },
+    });
+
+    if (!profile) {
+      return reply.status(404).send({
+        error: "Not found",
+        message: "You haven't submitted your birth details yet",
+      });
+    }
+
+    // Return only safe, frontend-ready fields
+    return reply.status(200).send({
+      birth_date: profile.birthDate.toISOString().split("T")[0],
+      birth_place: profile.birthPlaceInput,
+      time_confidence: profile.timeConfidence,
+      birth_time: profile.birthTime,
+      locked: profile.locked,
+    });
+  });
+
+  /**
+   * PUT /api/birth-profile
+   * Updates are not allowed when birth profile is locked.
+   */
+  fastify.put("/api/birth-profile", async (request, reply) => {
+    const session = await requireAuth(request, reply);
+    if (!session) return;
+
+    const profile = await prisma.birthProfile.findUnique({
+      where: { userId: session.user.id },
+    });
+
+    if (!profile) {
+      return reply.status(404).send({
+        error: "Not found",
+        message: "You haven't submitted your birth details yet",
+      });
+    }
+
+    if (profile.locked) {
+      return reply.status(403).send({
+        error: LOCKED_ERROR,
+        message: LOCKED_MESSAGE,
+      });
+    }
+
+    // If unlocked updates are ever allowed, logic would go here
     return reply.status(403).send({
-      error: "Forbidden",
+      error: LOCKED_ERROR,
       message: LOCKED_MESSAGE,
     });
   });
 
   /**
    * PATCH /api/birth-profile
-   * Updates are not allowed; birth profiles are immutable.
+   * Updates are not allowed when birth profile is locked.
    */
-  fastify.patch("/api/birth-profile", async (_request, reply) => {
+  fastify.patch("/api/birth-profile", async (request, reply) => {
+    const session = await requireAuth(request, reply);
+    if (!session) return;
+
+    const profile = await prisma.birthProfile.findUnique({
+      where: { userId: session.user.id },
+    });
+
+    if (!profile) {
+      return reply.status(404).send({
+        error: "Not found",
+        message: "You haven't submitted your birth details yet",
+      });
+    }
+
+    if (profile.locked) {
+      return reply.status(403).send({
+        error: LOCKED_ERROR,
+        message: LOCKED_MESSAGE,
+      });
+    }
+
+    // If unlocked updates are ever allowed, logic would go here
     return reply.status(403).send({
-      error: "Forbidden",
+      error: LOCKED_ERROR,
       message: LOCKED_MESSAGE,
     });
   });
