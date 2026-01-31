@@ -4,6 +4,7 @@ import formbody from '@fastify/formbody';
 import cookie from '@fastify/cookie';
 import { handleAuthRequest } from './modules/auth/auth.handler';
 import { disconnectPrisma } from './config/prisma';
+import { birthProfileRoutes } from './modules/birth-profile/birth-profile.routes';
 
 const start = async () => {
   const fastify = Fastify({
@@ -42,6 +43,9 @@ const start = async () => {
   fastify.all('/auth/*', async (request, reply) => {
     await handleAuthRequest(request, reply);
   });
+
+  // API routes (authenticated)
+  await fastify.register(birthProfileRoutes);
 
   // Graceful startup with port conflict handling
   const port = Number(process.env.PORT) || 3000;

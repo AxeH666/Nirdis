@@ -124,6 +124,31 @@ export async function handleAuthRequest(
 }
 
 /**
+ * Get the current session for a Fastify request (e.g. for protecting API routes).
+ * Resolves Auth.js session by issuing an internal GET /auth/session with the same cookies.
+ */
+export async function getSessionForRequest(req: FastifyRequest): Promise<{ user: { id: string; [key: string]: unknown } } | null> {
+  const protocol = getProtocol(req);
+  const host = req.headers.host ?? `localhost:${process.env.PORT ?? 3000}`;
+  const sessionUrl = `${protocol}://${host}/auth/session`;
+  const headers = new Headers();
+  for (const [key, value] of Object.entries(req.raw.headers)) {
+    if (value === undefined || key.toLowerCase() === "content-length") continue;
+    if (Array.isArray(value)) value.forEach((v) => headers.append(key, v));
+    else headers.set(key, value);
+  }
+  const request = new Request(sessionUrl, { method: "GET", headers });
+  const response = await Auth(request, {
+    ...authConfig,
+    basePath: "/auth",
+    trustHost: true,
+  });
+  if (!response.ok) return null;
+  const data = await response.json();
+  return data && typeof data === "object" && data.user ? data : null;
+}
+
+/**
  * Determine protocol from request headers
  * Handles reverse proxy scenarios (x-forwarded-proto) and direct connections
  */
