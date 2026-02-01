@@ -5,4 +5,9 @@ dist
 .env.*
 !.env.example
 
+# Local debug artifacts
+auth.log
+cookies.txt
+logs.txt
+
 /src/generated/prisma

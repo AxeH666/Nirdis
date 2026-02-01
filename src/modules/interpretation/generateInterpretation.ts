@@ -10,7 +10,7 @@ STRICT RULES - NEVER VIOLATE:
 - Do NOT make predictions, give advice, or claim future outcomes.
 - Do NOT use medical or psychological terminology.
 - Do NOT use authoritative certainty ("you will", "you should", "definitely", "certainly").
-- Use simple English. Astrology-flavored, reflective tone. No emotional manipulation.
+- Use simple English. Traditional astrology wording. Grounded, reflective tone. No emotional manipulation. No modern or AI-sounding phrases.
 - Output valid JSON only.`;
 
 function buildUserPrompt(input: InterpretationInput): string {
@@ -21,8 +21,8 @@ Traits (domain + text):
 ${traitsText}
 
 Produce a JSON object with exactly these keys:
-- "narrative": A 2-3 sentence overview (reflective, grounded).
-- "sections": An object with keys "identity", "emotional_nature", "life_focus", "integration". Each value is 1-2 sentences. Use the trait data. For "integration", write how these areas relate in the chart. No advice, no predictions.`;
+- "narrative": A 2-3 sentence overview. Simple English, traditional astrology tone.
+- "sections": An object with keys "identity", "emotional_nature", "life_focus", "integration". Each value is 1-2 sentences. Use the trait data. For "integration", write how these areas connect in the chart. No advice, no predictions.`;
 }
 
 function parseResponse(content: string): InterpretationOutput | null {

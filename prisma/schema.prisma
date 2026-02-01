@@ -1,8 +1,8 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
-//
-// Schema deployment: Run auth_tables.sql once as postgres (no migrations).
-// At runtime: Only `prisma generate` is required.
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
   provider = "prisma-client-js"
@@ -30,12 +30,6 @@ enum ActionType {
   CHAT
 }
 
-enum TimeConfidence {
-  exact
-  approx
-  unknown
-}
-
 // Models
 model Guest {
   id                  String      @id @default(uuid())
@@ -45,47 +39,26 @@ model Guest {
   last_seen           DateTime?
   usage_logs          UsageLog[]
 
-  @@index([created_at])
   @@map("guests")
+  @@index([created_at])
 }
 
 model User {
-  id            String        @id @default(cuid())
+  id            String       @id @default(uuid())
+  email         String       @unique
   name          String?
-  email         String        @unique
   emailVerified DateTime?
   image         String?
-  auth_provider AuthProvider  @default(GOOGLE)
-  plan          Plan          @default(FREE)
-  created_at    DateTime      @default(now())
-  accounts      Account[]
-  sessions      Session[]
-  usage_logs    UsageLog[]
-  birthProfile  BirthProfile?
+  auth_provider AuthProvider @default(GOOGLE)
+  plan          Plan         @default(FREE)
+  created_at    DateTime     @default(now())
+  usage_logs   UsageLog[]
+  accounts     Account[]
+  sessions     Session[]
 
+  @@map("users")
   @@index([created_at])
   @@index([email])
-  @@map("users")
-}
-
-model BirthProfile {
-  id              String         @id @default(uuid())
-  userId          String         @unique @map("user_id")
-  birthDate       DateTime       @map("birth_date")
-  birthTime       String?        @map("birth_time")
-  timeConfidence  TimeConfidence @map("time_confidence")
-  birthPlaceInput String         @map("birth_place_input")
-  latitude        Float
-  longitude       Float
-  timezone        String
-  birthUtc        DateTime       @map("birth_utc")
-  locked          Boolean        @default(true)
-  createdAt       DateTime       @default(now()) @map("created_at")
-  updatedAt       DateTime       @updatedAt @map("updated_at")
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("birth_profiles")
 }
 
 model UsageLog {
@@ -97,43 +70,49 @@ model UsageLog {
   user        User?       @relation(fields: [user_id], references: [id], onDelete: Cascade)
   guest       Guest?      @relation(fields: [guest_id], references: [id], onDelete: Cascade)
 
+  @@map("usage_logs")
   @@index([user_id])
   @@index([guest_id])
   @@index([created_at])
   @@index([action_type])
-  @@map("usage_logs")
 }
 
-// Auth.js models - exact schema from @auth/prisma-adapter
+// Auth.js models — must match migration (composite keys, no id columns)
 model Account {
   userId            String
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String?  @db.Text
-  access_token      String?  @db.Text
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String?  @db.Text
+  id_token          String? @db.Text
   session_state     String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@map("Account")
   @@id([provider, providerAccountId])
+  @@index([userId])
 }
 
 model Session {
-  sessionToken String   @unique
+  sessionToken String   @id
   userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("Session")
+  @@index([userId])
 }
 
 model VerificationToken {
   identifier String
-  token      String   @unique
+  token      String
   expires    DateTime
 
+  @@map("VerificationToken")
   @@id([identifier, token])
 }

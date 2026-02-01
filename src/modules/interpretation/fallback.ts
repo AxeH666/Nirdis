@@ -11,12 +11,12 @@ function buildFallback(input: InterpretationInput): InterpretationOutput {
   const lifeFocus = traitByDomain(input.traits, "life_theme");
 
   return {
-    narrative: input.summary + " The chart suggests a particular blend of identity, inner rhythm, and life emphasis.",
+    narrative: input.summary + " The chart brings together identity, inner rhythm, and life emphasis.",
     sections: {
       identity: identity || "The first house and ascendant describe the approach to the world.",
       emotional_nature: emotional || "The Moon placement reflects inner rhythms and responsiveness.",
       life_focus: lifeFocus || "The Sun house indicates where life emphasis tends to fall.",
-      integration: "These factors combine in the chart. Each area informs the others.",
+      integration: "These factors work together in the chart. Each area touches the others.",
     },
   };
 }

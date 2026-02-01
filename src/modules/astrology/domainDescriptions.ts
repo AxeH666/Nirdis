@@ -27,34 +27,34 @@ const SIGN_QUALITIES: Record<string, string> = {
 };
 
 const PLANET_MODIFIERS: Record<string, string> = {
-  Sun: 'emphasizes vitality and core expression',
-  Moon: 'emphasizes rhythms and instincts',
-  Mercury: 'emphasizes communication and reasoning',
-  Venus: 'emphasizes harmony and connection',
-  Mars: 'emphasizes action and initiative',
-  Jupiter: 'emphasizes expansion and principle',
-  Saturn: 'emphasizes structure and responsibility',
+  Sun: 'accents vitality and core expression',
+  Moon: 'accents rhythms and instincts',
+  Mercury: 'accents communication and reasoning',
+  Venus: 'accents harmony and connection',
+  Mars: 'accents action and initiative',
+  Jupiter: 'accents expansion and higher principles',
+  Saturn: 'accents structure and responsibility',
 };
 
 const HOUSE_MEANINGS: Record<string, { topic: string; focus: string }> = {
   identity_and_body: {
-    topic: 'The first house governs identity and the physical body.',
+    topic: 'The first house rules the self and the physical body.',
     focus: 'self-presentation and physical presence',
   },
   work_and_duty: {
-    topic: 'The sixth house governs daily work, service, and health.',
-    focus: 'routine, duty, and practical service',
+    topic: 'The sixth house rules daily work, service, and health.',
+    focus: 'routine, duty, and useful service',
   },
   relationships: {
-    topic: 'The seventh house governs partnerships and one-to-one relationships.',
-    focus: 'marriage, contracts, and open dealings with others',
+    topic: 'The seventh house rules partnership and open dealings with others.',
+    focus: 'marriage, contracts, and one-to-one ties',
   },
   inner_world: {
-    topic: 'The fourth house governs home, family, and inner foundation.',
-    focus: 'roots, private life, and the domestic sphere',
+    topic: 'The fourth house rules home, family, and roots.',
+    focus: 'private life and the domestic sphere',
   },
   growth_and_belief: {
-    topic: 'The ninth house governs philosophy, higher learning, and belief.',
+    topic: 'The ninth house rules philosophy, higher learning, and belief.',
     focus: 'wisdom, travel, and the search for meaning',
   },
 };
@@ -75,7 +75,7 @@ function getPlanetPhrase(planets: string[]): string {
   const modifier = PLANET_MODIFIERS[first];
   if (!modifier) return '';
   if (planets.length === 1) return ` ${first} here ${modifier}.`;
-  return ` Planets present (${planets.join(', ')}) shape this area.`;
+  return ` Planets in this house (${planets.join(', ')}) accent this area.`;
 }
 
 export function describeDomain(
