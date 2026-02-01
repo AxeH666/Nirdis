@@ -14,6 +14,7 @@ import { buildPreviousLifeSection } from './modules/interpretation/previousLifeS
 import { mapChartToInsights } from './modules/psychology';
 import { handleChatRequest } from './modules/chat/chat.route';
 import { attachSession } from './modules/auth/session';
+import { buildHoroscope } from './modules/horoscope';
 
 const fastify = Fastify({
   logger: true,
@@ -97,6 +98,12 @@ const start = async () => {
       };
     }
     return result;
+  });
+
+  // Horoscope endpoint (deterministic from natal chart only)
+  fastify.get('/api/horoscope', async (_request, _reply) => {
+    const chart = await getChart();
+    return buildHoroscope(chart);
   });
 
   try {
